@@ -48,4 +48,30 @@ class ApiService {
       return false;
     }
   }
+
+  Future<bool> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/login'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
 }

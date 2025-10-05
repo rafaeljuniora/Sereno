@@ -1,6 +1,6 @@
 package com.biopark.sereno.controller;
 
-import com.biopark.sereno.dto.UserRegistrationDto;
+import com.biopark.sereno.dto.UserRegistrationDTO;
 import com.biopark.sereno.domain.User;
 import com.biopark.sereno.service.UserService;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDTO registrationDto) {
         try {
             User createdUser = userService.registerUser(registrationDto);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);

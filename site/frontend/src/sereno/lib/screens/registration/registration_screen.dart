@@ -207,7 +207,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
             const SizedBox(height: 20),
             TextButton(
-              onPressed: () {},
+              onPressed: () {Navigator.of(context).pop();},
               child: const Text('Logar na Conta...'),
             ),
           ],
