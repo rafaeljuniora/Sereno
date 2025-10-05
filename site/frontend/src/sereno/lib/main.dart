@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sereno/screens/registration_screen.dart';
+import 'package:sereno/screens/registration/registration_screen.dart';
 
 void main() {
   runApp(const MyApp());

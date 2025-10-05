@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../service/api_service.dart';
+import '../../service/api_service.dart';
 
 enum PersonalityType { INTROVERTIDO, EXTROVERTIDO }
 
