@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sereno/screens/registration/registration_screen.dart';
+import "package:sereno/screens/tests_screens/tests_navegator.dart";
 
 void main() {
   runApp(const MyApp());
@@ -26,7 +27,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const RegistrationScreen(),
+      //home: const RegistrationScreen(),
+      home: const MainMenuNavigator(),
     );
   }
 }
