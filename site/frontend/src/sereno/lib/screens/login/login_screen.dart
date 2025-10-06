@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sereno/screens/registration/registration_screen.dart';
 import '../../service/api_service.dart';
+import 'package:sereno/screens/Mood/mood_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -24,13 +25,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submitLogin() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
+    if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final success = await _apiService.loginUser(
+    final userData = await _apiService.loginUser(
       email: _emailController.text,
       password: _passwordController.text,
     );
@@ -38,19 +36,24 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login realizado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (userData != null) {
+        final userId = userData['id'];
+        final hasSubmitted = await _apiService.hasSubmittedMoodToday(userId: userId);
+
+        if (!mounted) return;
+
+        if (hasSubmitted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login com sucesso! Humor do dia já registrado.'), backgroundColor: Colors.green),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => MoodScreen(userId: userId)),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Email ou senha inválidos.'),
-            backgroundColor: Colors.red,
-          ),
+          const SnackBar(content: Text('Email ou senha inválidos.'), backgroundColor: Colors.red),
         );
       }
     }

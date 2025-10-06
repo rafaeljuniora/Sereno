@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+enum MoodType { FELIZ, INDIFERENTE, RAIVA, TRISTEZA, MEDO }
+
 class ApiService {
   static const String _baseUrl = 'http://localhost:8080/api/v1';
 
@@ -50,7 +52,7 @@ class ApiService {
     }
   }
 
-  Future<bool> loginUser({
+  Future<Map<String, dynamic>?> loginUser({
     required String email,
     required String password,
   }) async {
@@ -67,12 +69,12 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return true;
+        return jsonDecode(response.body);
       } else {
-        return false;
+        return null;
       }
     } catch (e) {
-      return false;
+      throw Exception('Erro ao fazer login: $e');
     }
   }
   Future<bool> updateAvatar({
@@ -98,5 +100,42 @@ class ApiService {
     } catch (e) {
       return false;
     }
+  }
+
+  Future<bool> submitMood({required int userId, required MoodType mood}) async {
+  final String moodString = mood.toString().split('.').last;
+  
+  final url = Uri.parse('$_baseUrl/moods');
+  final body = jsonEncode(<String, dynamic>{
+    'userId': userId,
+    'moodType': moodString,
+  });
+
+  try {
+    final response = await http.post(
+      url,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: body,
+    );
+
+    if (response.statusCode == 201) {
+      return true;
+    } else {
+      return false;
+    }
+
+  } catch (e) {
+    return false;
+  }
+}
+
+  Future<bool> hasSubmittedMoodToday({required int userId}) async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/moods/today-status/$userId'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body)['submitted'];
+      }
+      return false;
+    } catch (e) { return false; }
   }
 }
