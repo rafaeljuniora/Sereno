@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 class ApiService {
   static const String _baseUrl = 'http://localhost:8080/api/v1';
 
-  Future<bool> registerUser({
+  Future<int?> registerUser({
     required String email,
     required String password,
     required DateTime birthDate,
@@ -40,12 +40,13 @@ class ApiService {
       );
 
       if (response.statusCode == 201) {
-        return true;
-      } else {
-        return false;
-      }
+      final responseBody = jsonDecode(response.body);
+      return responseBody['id']; 
+    } else {
+      return null;
+    }
     } catch (e) {
-      return false;
+      return null;
     }
   }
 
@@ -62,6 +63,30 @@ class ApiService {
         body: jsonEncode(<String, dynamic>{
           'email': email,
           'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+  Future<bool> updateAvatar({
+    required int userId,
+    required String avatarId,
+  }) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$_baseUrl/users/$userId/avatar'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'avatarId': avatarId,
         }),
       );
 

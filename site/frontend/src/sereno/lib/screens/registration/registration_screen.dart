@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../service/api_service.dart';
+import '../Avatar/avatar_screen.dart';
 
 enum PersonalityType { INTROVERTIDO, EXTROVERTIDO }
 
@@ -62,49 +63,49 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   void _submitRegistration() async {
-    if (!_formKeyStep2.currentState!.validate() ||
-        _personalityType == null ||
-        _livesAlone == null) {
+    if (!_formKeyStep2.currentState!.validate() || _personalityType == null || _livesAlone == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha todos os campos obrigatórios.'),
-        ),
+        const SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios.')),
       );
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    final success = await _apiService.registerUser(
-      email: _emailController.text,
-      password: _passwordController.text,
-      birthDate: _birthDate!,
-      isDonaduzziStudent: _isDonaduzziStudent,
-      isBioparkCollaborator: _isBioparkCollaborator,
-      hobbies: _hobbiesController.text,
-      job: _jobController.text,
-      course: _courseController.text,
-      leisureTime: _leisureTimeController.text,
-      personalityType: _personalityType == PersonalityType.INTROVERTIDO
-          ? 'INTROVERTIDO'
-          : 'EXTROVERTIDO',
-      livesAlone: _livesAlone == LivesAlone.SIM,
-    );
-
-    setState(() => _isLoading = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? 'Cadastro realizado com sucesso!'
-                : 'Falha no cadastro. Verifique os dados ou o console.',
-          ),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
+    try {
+      setState(() => _isLoading = true);
+      final userId = await _apiService.registerUser(
+        email: _emailController.text,
+        password: _passwordController.text,
+        birthDate: _birthDate!,
+        isDonaduzziStudent: _isDonaduzziStudent,
+        isBioparkCollaborator: _isBioparkCollaborator,
+        hobbies: _hobbiesController.text,
+        job: _jobController.text,
+        course: _courseController.text,
+        leisureTime: _leisureTimeController.text,
+        personalityType: _personalityType == PersonalityType.INTROVERTIDO ? 'INTROVERTIDO' : 'EXTROVERTIDO',
+        livesAlone: _livesAlone == LivesAlone.SIM,
       );
-      if (success) {}
+
+      if (!mounted) return;
+
+      if (userId != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => AvatarScreen(userId: userId),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Falha no cadastro. Verifique os dados ou o console.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
