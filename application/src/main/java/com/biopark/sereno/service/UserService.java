@@ -50,4 +50,12 @@ public class UserService {
 
         return user;
     }
+
+    public User updateUserAvatar(Long userId, String avatarId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + userId));
+        user.getUserInfo().setAvatarId(avatarId);
+
+        return userRepository.save(user);
+    }
 }

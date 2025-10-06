@@ -35,4 +35,7 @@ public class UserInfo {
 
     @Column(nullable = false)
     private boolean livesAlone;
+
+    @Column
+    private String avatarId;
 }
