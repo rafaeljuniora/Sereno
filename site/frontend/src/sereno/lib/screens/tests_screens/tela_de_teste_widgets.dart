@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../components/emotion_data_widget'; // Ajuste o caminho conforme sua estrutura
+import '../../components/emotion_data_widget.dart';
 
 class EmotionChartTestScreen extends StatelessWidget {
   const EmotionChartTestScreen({super.key});
@@ -12,10 +12,7 @@ class EmotionChartTestScreen extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
       ),
-      body: const Center(
-        // Este é o componente que você criou
-        child: EmotionDoughnutChartWithImageTooltip(),
-      ),
+      body: const Center(child: EmotionDoughnutChartWithImageTooltip()),
     );
   }
 }
