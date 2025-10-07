@@ -140,6 +140,10 @@ class ApiService {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/moods/today-status/$userId'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $authToken',
+        },
       );
       if (response.statusCode == 200) {
         return jsonDecode(response.body)['submitted'];

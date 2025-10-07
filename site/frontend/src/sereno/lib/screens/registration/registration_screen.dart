@@ -105,28 +105,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
 
         if (loginResponse != null && ApiService.authToken != null) {
-          // Checar se já submeteu humor hoje
-          final hasMood = await _apiService.hasSubmittedMoodToday(
-            userId: userId,
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => AvatarScreen(userId: userId),
+            ),
+            (route) => false,
           );
-
-          if (!hasMood) {
-            // Redireciona para MoodScreen
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => MoodScreen(userId: userId),
-              ),
-              (route) => false,
-            );
-          } else {
-            // Se já submeteu humor, pode ir direto para AvatarScreen ou Dashboard
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => AvatarScreen(userId: userId),
-              ),
-              (route) => false,
-            );
-          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

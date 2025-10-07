@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sereno/screens/dashboard/dashboard_screen.dart';
+import 'package:sereno/screens/mood/mood_screen.dart';
 import '../../service/api_service.dart';
 
 class AvatarScreen extends StatefulWidget {
@@ -35,15 +36,30 @@ class _AvatarScreenState extends State<AvatarScreen> {
 
   void _saveAvatar() async {
     setState(() => _isLoading = true);
+
     final success = await _apiService.updateAvatar(
       userId: widget.userId,
       avatarId: _currentAvatarIndex,
     );
-    setState(() => _isLoading = false);
 
+    setState(() => _isLoading = false);
     if (!mounted) return;
 
-    if (success) {
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível salvar o avatar. Tente mais tarde.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final hasMood = await _apiService.hasSubmittedMoodToday(
+      userId: widget.userId,
+    );
+
+    if (hasMood) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => DashboardScreen(
@@ -53,20 +69,21 @@ class _AvatarScreenState extends State<AvatarScreen> {
         ),
         (Route<dynamic> route) => false,
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Avatar salvo com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível salvar o avatar. Tente mais tarde.'),
-          backgroundColor: Colors.red,
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => MoodScreen(userId: widget.userId),
         ),
+        (Route<dynamic> route) => false,
       );
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Avatar salvo com sucesso!'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -94,7 +111,6 @@ class _AvatarScreenState extends State<AvatarScreen> {
                   ),
                 ],
               ),
-
               Column(
                 children: [
                   Text(
@@ -132,7 +148,6 @@ class _AvatarScreenState extends State<AvatarScreen> {
                   ),
                 ],
               ),
-
               _isLoading
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
