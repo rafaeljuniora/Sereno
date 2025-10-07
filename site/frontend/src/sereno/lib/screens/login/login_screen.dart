@@ -26,34 +26,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _submitLogin() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
 
-    final userData = await _apiService.loginUser(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+    try {
+      final response = await _apiService.loginUser(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (mounted) {
-      if (userData != null) {
-        final userId = userData['id'];
-        final hasSubmitted = await _apiService.hasSubmittedMoodToday(userId: userId);
-
-        if (!mounted) return;
-
-        if (hasSubmitted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login com sucesso! Humor do dia já registrado.'), backgroundColor: Colors.green),
+      if (mounted) {
+        if (response != null && response['userId'] != null) {
+          final userId = response['userId'] as int;
+          
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => MoodScreen(userId: userId)),
+            (Route<dynamic> route) => false,
           );
         } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => MoodScreen(userId: userId)),
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Email ou senha incorretos'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
-      } else {
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email ou senha inválidos.'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Erro: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

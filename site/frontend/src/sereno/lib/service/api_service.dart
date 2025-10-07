@@ -69,7 +69,8 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final responseData = jsonDecode(response.body);
+        return responseData;
       } else {
         return null;
       }
@@ -77,6 +78,7 @@ class ApiService {
       throw Exception('Erro ao fazer login: $e');
     }
   }
+
   Future<bool> updateAvatar({
     required int userId,
     required String avatarId,
