@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class UserRegistrationDto {
+public class UserRegistrationDTO {
 
     @NotBlank(message = "O email é obrigatório.")
     @Email(message = "O email deve ser válido.")

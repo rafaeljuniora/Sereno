@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sereno/screens/registration/registration_screen.dart';
-import "package:sereno/screens/tests_screens/tests_navegator.dart";
+import 'package:sereno/screens/login/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Sereno',
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
@@ -27,8 +27,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      //home: const RegistrationScreen(),
-      home: const MainMenuNavigator(),
+      home: const LoginScreen(),
     );
   }
 }

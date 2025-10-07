@@ -1,6 +1,7 @@
 package com.biopark.sereno.controller;
 
-import com.biopark.sereno.dto.UserRegistrationDto;
+import com.biopark.sereno.dto.AvatarUpdateDTO;
+import com.biopark.sereno.dto.UserRegistrationDTO;
 import com.biopark.sereno.domain.User;
 import com.biopark.sereno.service.UserService;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDTO registrationDto) {
         try {
             User createdUser = userService.registerUser(registrationDto);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
@@ -25,6 +26,18 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro ao processar a solicitação.");
+        }
+    }
+
+    @PatchMapping("/{userId}/avatar")
+    public ResponseEntity<?> updateUserAvatar(
+            @PathVariable Long userId,
+            @Valid @RequestBody AvatarUpdateDTO dto) {
+        try {
+            User updatedUser = userService.updateUserAvatar(userId, dto.getAvatarId());
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }

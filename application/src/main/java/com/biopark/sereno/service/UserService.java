@@ -1,7 +1,8 @@
 package com.biopark.sereno.service;
 
 import com.biopark.sereno.domain.UserInfo;
-import com.biopark.sereno.dto.UserRegistrationDto;
+import com.biopark.sereno.dto.LoginRequestDTO;
+import com.biopark.sereno.dto.UserRegistrationDTO;
 import com.biopark.sereno.domain.User;
 import com.biopark.sereno.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User registerUser(UserRegistrationDto dto) {
+    public User registerUser(UserRegistrationDTO dto) {
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalStateException("O email informado já está cadastrado.");
         }
@@ -38,5 +39,32 @@ public class UserService {
         newUser.setUserInfo(info);
 
         return userRepository.save(newUser);
+    }
+
+    public User login(LoginRequestDTO dto) {
+        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new RuntimeException("Credenciais inválidas."));
+
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Credenciais inválidas.");
+        }
+
+        return user;
+    }
+
+    public User updateUserAvatar(Long userId, String avatarId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + userId));
+        user.getUserInfo().setAvatarId(avatarId);
+
+        return userRepository.save(user);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário com o email " + email + " não encontrado."));
+    }
+
+    public boolean checkPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }
