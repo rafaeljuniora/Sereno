@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../service/api_service.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class MoodScreen extends StatefulWidget {
   final int userId;
@@ -36,7 +37,9 @@ class _MoodScreenState extends State<MoodScreen> {
         ),
       );
       if(success) {
-        Navigator.of(context).pop(); 
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        ); 
       }
     }
      setState(() => _isLoading = false);

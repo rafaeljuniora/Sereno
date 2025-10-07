@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../service/api_service.dart';
-import '../Avatar/avatar_screen.dart';
+import '../avatar/avatar_screen.dart';
 
 enum PersonalityType { INTROVERTIDO, EXTROVERTIDO }
 
