@@ -33,6 +33,7 @@ dependencies:
   http: ^1.1.0
   intl: ^0.18.1
   syncfusion_flutter_charts: ^26.2.5  # pra rodar os graficos
+  shared_preferences: ^2.2.0
 
   
 

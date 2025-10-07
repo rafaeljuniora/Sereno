@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../service/api_service.dart';
 import '../avatar/avatar_screen.dart';
+import '../Mood/mood_screen.dart';
 
 enum PersonalityType { INTROVERTIDO, EXTROVERTIDO }
 
@@ -63,15 +64,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   void _submitRegistration() async {
-    if (!_formKeyStep2.currentState!.validate() || _personalityType == null || _livesAlone == null) {
+    if (!_formKeyStep2.currentState!.validate() ||
+        _personalityType == null ||
+        _livesAlone == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios.')),
+        const SnackBar(
+          content: Text('Por favor, preencha todos os campos obrigatórios.'),
+        ),
       );
       return;
     }
 
+    setState(() => _isLoading = true);
+
     try {
-      setState(() => _isLoading = true);
+      // Registrar usuário
       final userId = await _apiService.registerUser(
         email: _emailController.text,
         password: _passwordController.text,
@@ -82,30 +89,74 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         job: _jobController.text,
         course: _courseController.text,
         leisureTime: _leisureTimeController.text,
-        personalityType: _personalityType == PersonalityType.INTROVERTIDO ? 'INTROVERTIDO' : 'EXTROVERTIDO',
+        personalityType: _personalityType == PersonalityType.INTROVERTIDO
+            ? 'INTROVERTIDO'
+            : 'EXTROVERTIDO',
         livesAlone: _livesAlone == LivesAlone.SIM,
       );
 
       if (!mounted) return;
 
       if (userId != null) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => AvatarScreen(userId: userId),
-          ),
+        // Logar usuário automaticamente
+        final loginResponse = await _apiService.loginUser(
+          email: _emailController.text,
+          password: _passwordController.text,
         );
+
+        if (loginResponse != null && ApiService.authToken != null) {
+          // Checar se já submeteu humor hoje
+          final hasMood = await _apiService.hasSubmittedMoodToday(
+            userId: userId,
+          );
+
+          if (!hasMood) {
+            // Redireciona para MoodScreen
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => MoodScreen(userId: userId),
+              ),
+              (route) => false,
+            );
+          } else {
+            // Se já submeteu humor, pode ir direto para AvatarScreen ou Dashboard
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => AvatarScreen(userId: userId),
+              ),
+              (route) => false,
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Cadastro realizado, mas falha ao logar automaticamente. Faça login manualmente.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       } else {
+        // Falha no cadastro
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Falha no cadastro. Verifique os dados ou o console.'),
+            content: Text(
+              'Falha no cadastro. Verifique os dados ou o console.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ocorreu um erro: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -133,16 +184,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           children: [
             const SizedBox(height: 40),
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/images/emoteFeliz.png',
-                  height: 50,
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
+                Image.asset('assets/images/emoteFeliz.png', height: 50),
+                const SizedBox(width: 10),
                 Text(
                   'Sereno',
                   style: TextStyle(
@@ -208,7 +253,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
             const SizedBox(height: 20),
             TextButton(
-              onPressed: () {Navigator.of(context).pop();},
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
               child: const Text('Logar na Conta...'),
             ),
           ],

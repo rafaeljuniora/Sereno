@@ -35,8 +35,8 @@ public class SecurityConfig {
                         // rotas públicas (sem autenticação)
                         .requestMatchers(
                                 "/api/v1/auth/login",
-                                "/api/v1/users/register",
-                                "/api/v1/moods/**" // <-- liberando rota de humor temporariamente
+                                "/api/v1/users/register"
+
                         ).permitAll()
 
                         // qualquer outra rota precisa de JWT

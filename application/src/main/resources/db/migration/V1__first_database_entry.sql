@@ -1,5 +1,5 @@
 -- ========================================
--- Migration inicial: Schema sem tabela 'avatar'
+-- Migration inicial ajustada
 -- ========================================
 
 -- Tabela para armazenar informações detalhadas do usuário
@@ -16,14 +16,24 @@ CREATE TABLE IF NOT EXISTS user_info (
     lives_alone BOOLEAN NOT NULL
 );
 
+-- Tabela para armazenar possíveis avatares (opcional)
+CREATE TABLE IF NOT EXISTS avatar (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+
+);
+
 -- Tabela de usuários
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
 
-    -- Coluna simples: armazena um ID/URL de avatar, mas não é FK
-    avatar_id int,
+    -- FK opcional para avatar
+    avatar_id BIGINT NULL,
+    CONSTRAINT fk_avatar
+        FOREIGN KEY (avatar_id)
+        REFERENCES avatar(id),
 
     -- FK para UserInfo (Relacionamento One-to-One)
     user_info_id BIGINT NOT NULL UNIQUE,
@@ -37,6 +47,14 @@ CREATE TABLE IF NOT EXISTS emotion (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
 );
+
+-- Inserindo emoções padrões
+INSERT INTO emotion (name) VALUES
+('FELIZ'),
+('INDIFERENTE'),
+('RAIVA'),
+('TRISTEZA'),
+('MEDO');
 
 -- Tabela para armazenar os registros diários de emoção
 CREATE TABLE IF NOT EXISTS mood_entry (
