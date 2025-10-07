@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../service/api_service.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../../components/mood_selection_circular_widget.dart';
 
 class MoodScreen extends StatefulWidget {
   final int userId;
@@ -11,38 +12,100 @@ class MoodScreen extends StatefulWidget {
 }
 
 class _MoodScreenState extends State<MoodScreen> {
-  MoodType? _selectedMood;
-  bool _isLoading = false;
+  bool _isLoading = true;
   final _apiService = ApiService();
 
-  final Map<MoodType, String> moodImages = {
-    MoodType.FELIZ: 'assets/images/emoteFeliz.png',
-    MoodType.INDIFERENTE: 'assets/images/emoteIndiferente.png',
-    MoodType.RAIVA: 'assets/images/emoteRaiva.png',
-    MoodType.TRISTEZA: 'assets/images/emoteTristeza.png',
-    MoodType.MEDO: 'assets/images/emoteMedo.png',
-  };
+  @override
+  void initState() {
+    super.initState();
+    _checkMoodStatus();
+  }
 
-  void _submitMood() async {
-    if (_selectedMood == null) return;
+  Future<void> _checkMoodStatus() async {
+    try {
+      final alreadySubmitted = await _apiService.hasSubmittedMoodToday(
+        userId: widget.userId,
+      );
+
+      if (!mounted) return;
+
+      if (alreadySubmitted) {
+        final avatarId = await _apiService.getMyAvatarId();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) =>
+                DashboardScreen(avatarId: avatarId ?? 2, userId: widget.userId),
+          ),
+        );
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _submitMood(int moodId) async {
     setState(() => _isLoading = true);
 
-    final success = await _apiService.submitMood(userId: widget.userId, mood: _selectedMood!);
-    
-    if(mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(
+    MoodType? mood;
+    switch (moodId) {
+      case 1:
+        mood = MoodType.FELIZ;
+        break;
+      case 2:
+        mood = MoodType.INDIFERENTE;
+        break;
+      case 3:
+        mood = MoodType.RAIVA;
+        break;
+      case 4:
+        mood = MoodType.TRISTEZA;
+        break;
+      case 5:
+        mood = MoodType.MEDO;
+        break;
+    }
+
+    if (mood == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final success = await _apiService.submitMood(
+        userId: widget.userId,
+        mood: mood,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? 'Humor registrado com sucesso!' : 'Ocorreu um erro.'),
+          content: Text(
+            success ? 'Humor registrado com sucesso!' : 'Ocorreu um erro.',
+          ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
       );
-      if(success) {
+
+      if (success) {
+        final avatarId = await _apiService.getMyAvatarId();
+
+        if (!mounted) return;
+
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-        ); 
+          MaterialPageRoute(
+            builder: (_) =>
+                DashboardScreen(avatarId: avatarId ?? 3, userId: widget.userId),
+          ),
+        );
+      } else {
+        setState(() => _isLoading = false);
       }
+    } catch (e) {
+      setState(() => _isLoading = false);
     }
-     setState(() => _isLoading = false);
   }
 
   @override
@@ -50,68 +113,43 @@ class _MoodScreenState extends State<MoodScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFC3C7F3),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [
-                   Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset('assets/images/emoteFeliz.png', height: 40),
-                        const SizedBox(width: 10),
-                        Text('Sereno', style: TextStyle(fontSize: 36, color: Colors.deepPurple[800], fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  const SizedBox(height: 40),
-                  Text('Como você está hoje?', style: TextStyle(fontSize: 28, color: Colors.deepPurple[800], fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  const Text('Toque para gravar o humor', style: TextStyle(fontSize: 16)),
-                ],
-              ),
-              Wrap(
-                spacing: 20.0,
-                runSpacing: 20.0,
-                alignment: WrapAlignment.center,
-                children: moodImages.entries.map((entry) {
-                  return _buildMoodEmote(entry.key, entry.value);
-                }).toList(),
-              ),
-              _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _selectedMood == null ? null : _submitMood,
-                    child: const Text('Confirmar'),
+        child: Center(
+          child: _isLoading
+              ? const CircularProgressIndicator()
+              : Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 40.0,
                   ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMoodEmote(MoodType mood, String imagePath) {
-    final bool isSelected = _selectedMood == mood;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedMood = mood),
-      child: Opacity(
-        opacity: isSelected || _selectedMood == null ? 1.0 : 0.5,
-        child: Column(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected ? Colors.deepPurple[200] : Colors.transparent,
-              ),
-              child: Image.asset(imagePath, height: 70),
-            ),
-            const SizedBox(height: 8),
-            Text(mood.toString().split('.').last, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/emoteFeliz.png',
+                            height: 40,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Sereno',
+                            style: TextStyle(
+                              fontSize: 36,
+                              color: Colors.deepPurple[800],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: MoodSelectionWidget(
+                          onMoodConfirmed: _submitMood,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );

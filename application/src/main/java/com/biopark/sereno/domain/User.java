@@ -24,11 +24,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Embedded
+
+    @OneToOne(cascade = CascadeType.ALL, optional = false)
+    @JoinColumn(name = "user_info_id", nullable = false)
     private UserInfo userInfo;
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MoodEntry> moodEntries;
+
+
+    @Column
+    private Integer avatarId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

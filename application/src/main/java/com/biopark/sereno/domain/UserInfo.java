@@ -1,16 +1,18 @@
 package com.biopark.sereno.domain;
 
 import com.biopark.sereno.model.PersonalityType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*; // Importações atualizadas
 import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-@Embeddable
+@Entity
+@Table(name = "user_info")
 public class UserInfo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private LocalDate birthDate;
@@ -36,6 +38,5 @@ public class UserInfo {
     @Column(nullable = false)
     private boolean livesAlone;
 
-    @Column
-    private String avatarId;
+
 }

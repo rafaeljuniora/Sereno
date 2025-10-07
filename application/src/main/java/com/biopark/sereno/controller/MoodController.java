@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 
@@ -14,6 +15,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class MoodController {
     private final MoodService moodService;
+
 
     @PostMapping
     public ResponseEntity<?> createMoodEntry(@Valid @RequestBody MoodEntryDTO dto) {

@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class AvatarUpdateDTO {
-    @NotBlank(message = "O ID do avatar não pode ser vazio.")
-    private String avatarId;
+
+    private Integer avatarId;
 }
