@@ -6,13 +6,11 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-@Entity
+
 @Table(name = "user_info")
 public class UserInfo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
 
     @Column(nullable = false)
     private LocalDate birthDate;

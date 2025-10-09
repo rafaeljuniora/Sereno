@@ -25,8 +25,7 @@ public class User implements UserDetails {
     private String password;
 
 
-    @OneToOne(cascade = CascadeType.ALL, optional = false)
-    @JoinColumn(name = "user_info_id", nullable = false)
+    @Embedded
     private UserInfo userInfo;
 
 
