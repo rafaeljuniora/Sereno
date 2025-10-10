@@ -44,7 +44,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   String getAvatarPath(int avatarId) {
-    print("oq veio no avatar id: $avatarId");
     if (avatarId < 1 || avatarId > 23) {
       return 'assets/images/profile/default.png';
     }
@@ -80,9 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 if (success) {
                   setState(() => currentAvatarId = newAvatarId);
-                  print('✅ Avatar atualizado para: $newAvatarId');
                 } else {
-                  print('❌ Falha ao atualizar avatar no backend.');
                 }
               }
             },

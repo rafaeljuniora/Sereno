@@ -25,9 +25,6 @@ class _MoodSelectionWidgetState extends State<MoodSelectionWidget> {
       } else {
         _selectedEmotion = emotion;
         _selectedEmotionIdToSave = emotion.id;
-        print(
-          "Emoção selecionada: ${emotion.emotion} (ID: $_selectedEmotionIdToSave) token: ${ApiService.authToken}",
-        );
       }
     });
   }
