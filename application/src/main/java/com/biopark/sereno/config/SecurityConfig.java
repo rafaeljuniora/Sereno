@@ -32,7 +32,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/*", "/api/v1/users/register","/api/v1/users/*/avatar", "/api/v1/users/**","/api/v1/moods/**").permitAll()
+                        // rotas públicas (sem autenticação)
+                        .requestMatchers(
+                                "/api/v1/auth/login",
+                                "/api/v1/users/register"
+
+                        ).permitAll()
+
+                        // qualquer outra rota precisa de JWT
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

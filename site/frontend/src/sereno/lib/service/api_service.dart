@@ -5,7 +5,14 @@ import 'package:intl/intl.dart';
 enum MoodType { FELIZ, INDIFERENTE, RAIVA, TRISTEZA, MEDO }
 
 class ApiService {
+  static final ApiService _instance = ApiService._internal();
+
+  factory ApiService() => _instance;
+
+  ApiService._internal();
+
   static const String _baseUrl = 'http://localhost:8080/api/v1';
+  static String? authToken;
 
   Future<int?> registerUser({
     required String email,
@@ -23,10 +30,8 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/users/register'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({
           'email': email,
           'password': password,
           'birthDate': DateFormat('yyyy-MM-dd').format(birthDate),
@@ -42,12 +47,11 @@ class ApiService {
       );
 
       if (response.statusCode == 201) {
-      final responseBody = jsonDecode(response.body);
-      return responseBody['id']; 
-    } else {
+        final responseBody = jsonDecode(response.body);
+        return responseBody['id'];
+      }
       return null;
-    }
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -59,21 +63,16 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/login'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'email': email,
-          'password': password,
-        }),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        authToken = responseData['token'];
         return responseData;
-      } else {
-        return null;
       }
+      return null;
     } catch (e) {
       throw Exception('Erro ao fazer login: $e');
     }
@@ -81,63 +80,77 @@ class ApiService {
 
   Future<bool> updateAvatar({
     required int userId,
-    required String avatarId,
+    required int avatarId,
   }) async {
     try {
       final response = await http.patch(
         Uri.parse('$_baseUrl/users/$userId/avatar'),
-        headers: <String, String>{
+        headers: {
           'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $authToken',
         },
-        body: jsonEncode(<String, dynamic>{
-          'avatarId': avatarId,
-        }),
+        body: jsonEncode({'avatarId': avatarId}),
       );
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
+      return response.statusCode == 200;
+    } catch (_) {
       return false;
+    }
+  }
+
+  Future<int?> getMyAvatarId() async {
+    if (authToken == null) return null;
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/users/me/avatar'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return int.tryParse(data['avatarId'].toString());
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
   Future<bool> submitMood({required int userId, required MoodType mood}) async {
-  final String moodString = mood.toString().split('.').last;
-  
-  final url = Uri.parse('$_baseUrl/moods');
-  final body = jsonEncode(<String, dynamic>{
-    'userId': userId,
-    'moodType': moodString,
-  });
+    final moodString = mood.toString().split('.').last;
+    if (authToken == null) return false;
 
-  try {
-    final response = await http.post(
-      url,
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: body,
-    );
+    final url = Uri.parse('$_baseUrl/moods');
+    final headers = {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer $authToken',
+    };
+    final body = jsonEncode({'userId': userId, 'mood': moodString});
 
-    if (response.statusCode == 201) {
-      return true;
-    } else {
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      return response.statusCode == 201;
+    } catch (_) {
       return false;
     }
-
-  } catch (e) {
-    return false;
   }
-}
 
   Future<bool> hasSubmittedMoodToday({required int userId}) async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/moods/today-status/$userId'));
+      final response = await http.get(
+        Uri.parse('$_baseUrl/moods/today-status/$userId'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
       if (response.statusCode == 200) {
         return jsonDecode(response.body)['submitted'];
       }
       return false;
-    } catch (e) { return false; }
+    } catch (_) {
+      return false;
+    }
   }
 }

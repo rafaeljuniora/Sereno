@@ -9,5 +9,5 @@ public class MoodEntryDTO {
     @NotNull
     private Long userId;
     @NotNull
-    private MoodType moodType;
+    private MoodType mood;
 }

@@ -25,7 +25,7 @@ public class MoodService {
 
         MoodEntry newEntry = new MoodEntry();
         newEntry.setUser(user);
-        newEntry.setMoodType(dto.getMoodType());
+        newEntry.setMoodType(dto.getMood());
         newEntry.setEntryDate(LocalDate.now());
 
         return moodEntryRepository.save(newEntry);

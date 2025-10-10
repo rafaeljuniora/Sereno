@@ -24,11 +24,17 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+
     @Embedded
     private UserInfo userInfo;
 
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MoodEntry> moodEntries;
+
+
+    @Column
+    private Integer avatarId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

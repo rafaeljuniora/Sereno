@@ -30,6 +30,15 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    public String generateTokenFromEmail(String email) {
+    return Jwts.builder()
+            .setSubject(email)
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+            .signWith(getSignInKey())
+            .compact();
+}
+
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .subject(userDetails.getUsername())

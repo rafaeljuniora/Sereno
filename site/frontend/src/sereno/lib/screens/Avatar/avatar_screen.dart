@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sereno/screens/login/login_screen.dart';
+import 'package:sereno/screens/dashboard/dashboard_screen.dart';
+import 'package:sereno/screens/mood/mood_screen.dart';
 import '../../service/api_service.dart';
 
 class AvatarScreen extends StatefulWidget {
@@ -19,39 +20,70 @@ class _AvatarScreenState extends State<AvatarScreen> {
 
   void _previousAvatar() {
     setState(() {
-      _currentAvatarIndex = (_currentAvatarIndex > 1) ? _currentAvatarIndex - 1 : _totalAvatars;
+      _currentAvatarIndex = (_currentAvatarIndex > 1)
+          ? _currentAvatarIndex - 1
+          : _totalAvatars;
     });
   }
 
   void _nextAvatar() {
     setState(() {
-      _currentAvatarIndex = (_currentAvatarIndex < _totalAvatars) ? _currentAvatarIndex + 1 : 1;
+      _currentAvatarIndex = (_currentAvatarIndex < _totalAvatars)
+          ? _currentAvatarIndex + 1
+          : 1;
     });
   }
 
   void _saveAvatar() async {
     setState(() => _isLoading = true);
+
     final success = await _apiService.updateAvatar(
       userId: widget.userId,
-      avatarId: _currentAvatarIndex.toString(),
+      avatarId: _currentAvatarIndex,
     );
-    setState(() => _isLoading = false);
 
-    if(mounted) {
-      if(success) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (Route<dynamic> route) => false,
-        );
-         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Conta criada com sucesso! Faça o login.'), backgroundColor: Colors.green),
-        );
-      } else {
-         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível salvar o avatar. Tente mais tarde.'), backgroundColor: Colors.red),
-        );
-      }
+    setState(() => _isLoading = false);
+    if (!mounted) return;
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível salvar o avatar. Tente mais tarde.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
+
+    final hasMood = await _apiService.hasSubmittedMoodToday(
+      userId: widget.userId,
+    );
+
+    if (hasMood) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(
+            avatarId: _currentAvatarIndex,
+            userId: widget.userId,
+          ),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => MoodScreen(userId: widget.userId),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Avatar salvo com sucesso!'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -69,18 +101,35 @@ class _AvatarScreenState extends State<AvatarScreen> {
                 children: [
                   Image.asset('assets/images/emoteFeliz.png', height: 40),
                   const SizedBox(width: 10),
-                  Text('Sereno', style: TextStyle(fontSize: 36, color: Colors.deepPurple[800], fontWeight: FontWeight.bold)),
+                  Text(
+                    'Sereno',
+                    style: TextStyle(
+                      fontSize: 36,
+                      color: Colors.deepPurple[800],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
-
               Column(
                 children: [
-                  Text('Escolha seu avatar', style: TextStyle(fontSize: 24, color: Colors.deepPurple[800])),
+                  Text(
+                    'Escolha seu avatar',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.deepPurple[800],
+                    ),
+                  ),
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: _previousAvatar, color: Colors.deepPurple[800], iconSize: 40),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios),
+                        onPressed: _previousAvatar,
+                        color: Colors.deepPurple[800],
+                        iconSize: 40,
+                      ),
                       ClipOval(
                         child: Image.asset(
                           'assets/images/profile/$_currentAvatarIndex.png',
@@ -89,18 +138,22 @@ class _AvatarScreenState extends State<AvatarScreen> {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      IconButton(icon: const Icon(Icons.arrow_forward_ios), onPressed: _nextAvatar, color: Colors.deepPurple[800], iconSize: 40),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios),
+                        onPressed: _nextAvatar,
+                        color: Colors.deepPurple[800],
+                        iconSize: 40,
+                      ),
                     ],
                   ),
                 ],
               ),
-              
               _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _saveAvatar,
-                    child: const Text('Salvar'),
-                  ),
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _saveAvatar,
+                      child: const Text('Salvar'),
+                    ),
             ],
           ),
         ),
